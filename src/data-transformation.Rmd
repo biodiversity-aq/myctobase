@@ -1,0 +1,213 @@
+---
+title: "Myctobase"
+author: "Yi-Ming Gan"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../html") })
+output:
+  html_document:
+    df_print: paged
+---
+
+## Read data
+
+### Event sheet
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+event <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQTAsG8cfsWZzJth1lcZzgG6ZpcEYzDTs1kS1W09WGfNG0HXOJ6yiJ1LJ9P4Iv7N_i29bwkT5pYoiy_/pub?gid=1909568000&single=true&output=tsv", header = TRUE, sep = "\t", allowEscapes = FALSE, quote = "", check.names = FALSE)
+head(event)
+names(event)
+```
+
+
+```{r}
+library(obistools)
+library(tidyverse)
+
+# df <- event %>% 
+#   filter(footprintWKT != "") %>% 
+#   mutate(coordinateUncertaintyInMeters = calculate_centroid(footprintWKT)$coordinateUncertaintyInMeters)
+
+```
+
+### Occurrence sheets
+
+#### Group occurrence
+
+```{r}
+# read groupOccurrence from url
+grp_occ <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQTAsG8cfsWZzJth1lcZzgG6ZpcEYzDTs1kS1W09WGfNG0HXOJ6yiJ1LJ9P4Iv7N_i29bwkT5pYoiy_/pub?gid=930085365&single=true&output=tsv", header = TRUE, sep = "\t", allowEscapes = FALSE, quote = "", check.names = FALSE)  
+head(grp_occ)
+names(grp_occ)
+```
+
+#### Individual occurrence
+
+```{r}
+# read groupOccurrence from url
+ind_occ <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQTAsG8cfsWZzJth1lcZzgG6ZpcEYzDTs1kS1W09WGfNG0HXOJ6yiJ1LJ9P4Iv7N_i29bwkT5pYoiy_/pub?gid=182044492&single=true&output=tsv", header = TRUE, sep = "\t", allowEscapes = FALSE, quote = "", check.names = FALSE)  
+head(ind_occ)
+names(ind_occ)
+```
+
+### eMOF
+
+Simple function to subset a measurementType from wide table into long emof table.
+
+```{r message=FALSE}
+#' Function to subset a measurementType from wide event table to long measurement or fact table
+#'
+#' @param data The data frame which contains measurement data in wide format.
+#' @param mof_type The value should be "event" or "occurrence". If "event", mof variables will be extracted from event table and occurrenceID will not be assigned to the MOF data frame. If "occurrence", mof variables and occurrenceID be extracted from occurrence table and occurrenceID will be used to create the eMOF record.
+#' @param mof_fields The data frame which contains measurement columnName of `data`, measurementType and measurementUnit
+#' @param measurement_col A string which is the field name of data frame that contains the measurement value. Will be used to populate the measurementValue field.
+#
+create_emof <- function(data = data, mof_type, mof_fields = mof_fields, measurement_col) {
+  # create a measurement or fact table of a single measurement type from the data
+  # subset from full dataset
+  if (mof_type =="event") {
+    mof <- data %>% 
+      # remove rows of measurement which are NULL
+      filter(!is.na(!!as.symbol(measurement_col))) %>%  # !!as.symbol is required as column name is passed as string
+      select(eventID, !!as.symbol(measurement_col)) %>%  # occurrenceID is absent because this is from an event table
+      mutate(occurrenceID = "")  # add a new column occurrenceID and set the value to empty string
+  } else if (mof_type =="occurrence") {
+    mof <- data %>% 
+    # remove rows of measurement which are NULL
+    filter(!is.na(!!as.symbol(measurement_col))) %>%  # !!as.symbol is required as column name is passed as string
+    select(eventID, occurrenceID, !!as.symbol(measurement_col)) # select occurrenceID here
+  } else { break }
+  
+  # pull measurementType, measurementTypeID, measuremntUnit and measurmentUnitID from mof sheet based on the column name
+  measurement_type <- mof_fields %>% filter(columnName == measurement_col) %>% pull(measurementType)
+  measurement_type_id <- mof_fields %>% filter(columnName == measurement_col) %>% pull(measurementTypeID)
+  measurement_unit <- mof_fields %>% filter(columnName == measurement_col) %>% pull(measurementUnit)
+  measurement_unit_id <- mof_fields %>% filter(columnName == measurement_col) %>% pull(measurementUnitID)
+  # create mof table (long table)
+  mof_df <- data.frame(
+    eventID = mof[, "eventID"],
+    occurrenceID = mof[, "occurrenceID"],
+    measurementType = measurement_type,
+    measurementTypeID = measurement_type_id,
+    measurementValue = mof[, measurement_col],
+    measurementUnit = measurement_unit,
+    measurementUnitID = measurement_unit_id
+  )
+  return(mof_df)
+}
+```
+
+
+Read measurementTypes sheet which has definition and unit for each measurement header
+
+```{r}
+# na="" to ensure that the string "NA" in measurementUnit is treated as string but not NA
+mof_fields <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQTAsG8cfsWZzJth1lcZzgG6ZpcEYzDTs1kS1W09WGfNG0HXOJ6yiJ1LJ9P4Iv7N_i29bwkT5pYoiy_/pub?gid=1292614048&single=true&output=tsv", header = TRUE, sep = "\t", na="", allowEscapes = FALSE, quote = "", check.names = FALSE)  
+```
+
+
+## Subsets of different measurements
+
+Create subsets of different measurements
+
+### event eMOF
+
+```{r}
+# event eMOF
+event_net <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "net")
+event_station <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "station")
+event_haulDuration <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "haulDuration")
+event_trackDistance <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "trackDistance")
+event_solarPosition <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "solarPosition")
+event_diel <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "diel")
+event_day_night_method <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "day_night_method")
+event_netSystem <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "netSystem")
+event_bottomDepthInMeters <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "bottomDepthInMeters")
+event_bottom_depth_method <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "bottom_depth_method")
+event_meanNetTemperature <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "meanNetTemperature")
+event_volumeFiltered <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "volumeFiltered")
+event_volumeFiltered2	<- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "volumeFiltered2")
+event_verticalTowHeight	<- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "verticalTowHeight")
+event_towDistance	<- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "towDistance")
+event_meanTowSpeed <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "meanTowSpeed")
+event_netSurfaceArea <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "netSurfaceArea")
+event_netType <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "netType")
+event_codendMesh <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "codendMesh")
+event_netMeshSize	<- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "netMeshSize")
+event_haulType <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "haulType")
+event_sector <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "sector")
+event_zone <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "zone")
+event_validation <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "validation")
+event_validationDescription <- create_emof(data = event, mof_type = "event", mof_fields = mof_fields, measurement_col = "validationDescription")
+
+# bind all the rows into 1 event eMOF data frame
+event_emof <- rbind (
+  event_net,
+  event_station,
+  event_haulDuration,
+  event_trackDistance,
+  event_solarPosition,
+  event_diel,
+  event_day_night_method,
+  event_netSystem,
+  event_bottomDepthInMeters,
+  event_bottom_depth_method,
+  event_meanNetTemperature,
+  event_volumeFiltered,
+  event_volumeFiltered2,
+  event_verticalTowHeight,
+  event_towDistance,
+  event_meanTowSpeed,
+  event_netSurfaceArea,
+  event_netType,
+  event_codendMesh,
+  event_netMeshSize,
+  event_haulType,
+  event_sector,
+  event_zone,
+  event_validation,
+  event_validationDescription
+)
+```
+
+
+### Occurrence eMOF
+
+groupOccurrence - Abundance is recorded in `organismQuantity` and `organismQuantityType`. I don't think it is necessary to duplicate all of that into eMOF because I think the file is already quite big.
+
+`standard_length` and `weight` in individualOccurrence is made into eMOF because they don't fit into Darwin Core Occurrence.
+
+```{r}
+# individualOccurrence eMOF
+occ_standard_length <- create_emof(data = ind_occ, mof_type = "occurrence", mof_fields = mof_fields, measurement_col = "standard_length")
+occ_weight <- create_emof(data = ind_occ, mof_type = "occurrence", mof_fields = mof_fields, measurement_col = "weight")
+
+# bind into a data frame
+occ_emof <- rbind (
+  occ_standard_length,
+  occ_weight
+)
+```
+
+
+Write to file
+
+```{r message=FALSE}
+library(here)
+library(readr)
+require(dplyr)    
+
+# directories
+outfile_dir <- here("data/processed")
+event_file <- file.path(outfile_dir, "event.txt")
+occ_file <- file.path(outfile_dir, "occurrence.txt")
+event_emof_file <- file.path(outfile_dir, "event_measurementOrFact.txt")
+occ_emof_file <- file.path(outfile_dir, "occ_measurementOrFact.txt")
+
+# write file
+write_tsv(event_emof, event_emof_file, na="", quote = "none", escape = "none")  # na="" to ensure that empty fields are leave empty
+write_tsv(occ_emof, occ_emof_file, na="", quote = "none", escape = "none")
+```
+
+
