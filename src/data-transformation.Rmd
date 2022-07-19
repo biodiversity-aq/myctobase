@@ -25,8 +25,10 @@ names(event)
 library(obistools)
 library(tidyverse)
 
-# df <- event %>% 
-#   filter(footprintWKT != "") %>% 
+## throws fatal error 
+
+# df <- event %>%
+#   filter(footprintWKT != "") %>%
 #   mutate(coordinateUncertaintyInMeters = calculate_centroid(footprintWKT)$coordinateUncertaintyInMeters)
 
 ```
@@ -104,6 +106,7 @@ Read measurementTypes sheet which has definition and unit for each measurement h
 ```{r}
 # na="" to ensure that the string "NA" in measurementUnit is treated as string but not NA
 mof_fields <- read.csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQTAsG8cfsWZzJth1lcZzgG6ZpcEYzDTs1kS1W09WGfNG0HXOJ6yiJ1LJ9P4Iv7N_i29bwkT5pYoiy_/pub?gid=1292614048&single=true&output=tsv", header = TRUE, sep = "\t", na="", allowEscapes = FALSE, quote = "", check.names = FALSE)  
+mof_fields
 ```
 
 
