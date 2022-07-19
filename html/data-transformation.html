@@ -1865,7 +1865,14 @@ event_emof &lt;- rbind (
   event_zone,
   event_validation,
   event_validationDescription
-)</code></pre>
+)
+
+event_emof %&gt;% select(measurementType, measurementTypeID, measurementUnit, measurementUnitID) %&gt;% distinct()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["measurementType"],"name":[1],"type":["chr"],"align":["left"]},{"label":["measurementTypeID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["measurementUnit"],"name":[3],"type":["chr"],"align":["left"]},{"label":["measurementUnitID"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"net number (i.e., six codends labelled from 1 to 6 or two nets labelled 1 to 2).","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"station ID/number from research cruise","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"duration of net tow (min).","2":"https://vocab.nerc.ac.uk/collection/P01/current/AZDRZZ01/","3":"min","4":"https://vocab.nerc.ac.uk/collection/P06/current/UMIN/"},{"1":"horizontal distance travelled along the voyage track during tow (m).","2":"https://vocab.nerc.ac.uk/collection/P01/current/DSRNCV01/","3":"m","4":"http://vocab.nerc.ac.uk/collection/P06/current/ULAA/"},{"1":"angle of sun in relation to horizon (degrees). Horizon = 0 degrees; nighttime = < 0 degrees after sunset; daytime = > 0 degrees after sunrise.","2":"NA","3":"deg","4":"http://vocab.nerc.ac.uk/collection/P06/current/UAAA/"},{"1":"indicates whether net was hauled at dawn, day, dusk or night","2":"NA","3":"NA","4":"NA"},{"1":"method used for calculation of 'solarPosition' and 'diel' (eg. maptools or onboard observations)","2":"NA","3":"NA","4":"NA"},{"1":"describes whether the net was an opening-closing system or an open mouth net","2":"NA","3":"NA","4":"NA"},{"1":"an average of the bottom depth over area sampled (m)","2":"NA","3":"m","4":"http://vocab.nerc.ac.uk/collection/P06/current/ULAA/"},{"1":"how bottom depth was determined eg. from echosounder or underway data.","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"mean temperature in net during trawl (°C)","2":"NA","3":"degC","4":"http://vocab.nerc.ac.uk/collection/P06/current/UPAA/"},{"1":"the amount of water filtered through the net (m3)","2":"NA","3":"m^3","4":"https://vocab.nerc.ac.uk/collection/P06/current/MCUB/"},{"1":"the amount of water filtered through the net (m3) retrospectively calculated by Myctobase creators. See Online-only Table 2 for details.","2":"NA","3":"m^3","4":"https://vocab.nerc.ac.uk/collection/P06/current/MCUB/"},{"1":"vertical distance covered by net tow (m).","2":"NA","3":"m","4":"http://vocab.nerc.ac.uk/collection/P06/current/ULAA/"},{"1":"total distance travelled through the water by the net as measured by a flowmeter (m)","2":"NA","3":"m","4":"http://vocab.nerc.ac.uk/collection/P06/current/ULAA/"},{"1":"speed at which the net was towed in (kn).","2":"NA","3":"Knots","4":"https://vocab.nerc.ac.uk/collection/P06/current/UKNT/"},{"1":"size of the mouth opening of the net (m2)","2":"https://vocab.nerc.ac.uk/collection/Q01/current/Q0100017/","3":"m^2","4":"https://vocab.nerc.ac.uk/collection/P06/current/UMSQ/"},{"1":"sampling net used (i.e., RMT 25; IYGPT with MIDOC).","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"size of codend mesh (mm).","2":"NA","3":"mm","4":"https://vocab.nerc.ac.uk/collection/P06/current/UXMM/"},{"1":"size of mesh at the opening of the net (mm).","2":"https://vocab.nerc.ac.uk/collection/Q01/current/Q0100015/","3":"mm","4":"https://vocab.nerc.ac.uk/collection/P06/current/UXMM/"},{"1":"the haul type of the event (i.e., at a station, target, routine, test, surface or failed haul).","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"the sector (Atlantic, Indian, East and West Pacific Sectors) in which the event took place as defined by Constable et al. (2014).","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"zone (Northern, Subantarctic or Antarctic) in which the net haul took place as defined by Orsi et al. (1995).","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"index to indicate whether a record passed quality control processes where 0 = fail, 1 = pass.","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"},{"1":"gives an explanation for why a record may have failed quality control checks.","2":"NA","3":"__NA__","4":"https://vocab.nerc.ac.uk/collection/P06/current/XXXX/"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 </div>
 <div id="occurrence-emof" class="section level3">
 <h3>Occurrence eMOF</h3>
@@ -1884,7 +1891,13 @@ occ_weight &lt;- create_emof(data = ind_occ, mof_type = &quot;occurrence&quot;, 
 occ_emof &lt;- rbind (
   occ_standard_length,
   occ_weight
-)</code></pre>
+)
+occ_emof %&gt;% select(measurementType, measurementTypeID, measurementUnit, measurementUnitID) %&gt;% distinct()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["measurementType"],"name":[1],"type":["chr"],"align":["left"]},{"label":["measurementTypeID"],"name":[2],"type":["chr"],"align":["left"]},{"label":["measurementUnit"],"name":[3],"type":["chr"],"align":["left"]},{"label":["measurementUnitID"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"standard length (mm)","2":"NA","3":"mm","4":"https://vocab.nerc.ac.uk/collection/P06/current/UXMM/"},{"1":"measured wet weight (g)","2":"NA","3":"g","4":"https://vocab.nerc.ac.uk/collection/P06/current/UGRM/"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
 <p>Write to file</p>
 <pre class="r"><code>library(here)
 library(readr)

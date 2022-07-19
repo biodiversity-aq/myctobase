@@ -172,6 +172,8 @@ event_emof <- rbind (
   event_validation,
   event_validationDescription
 )
+
+event_emof %>% select(measurementType, measurementTypeID, measurementUnit, measurementUnitID) %>% distinct()
 ```
 
 
@@ -191,6 +193,7 @@ occ_emof <- rbind (
   occ_standard_length,
   occ_weight
 )
+occ_emof %>% select(measurementType, measurementTypeID, measurementUnit, measurementUnitID) %>% distinct()
 ```
 
 
